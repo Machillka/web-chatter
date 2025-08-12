@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
+// 以项目根节点作为路径的起点
 func LoadConfig(path string) {
 	viper.SetConfigFile(path)
 	if err := viper.ReadInConfig(); err != nil {

@@ -2,15 +2,18 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/machillka/web-chatter/config"
+
+	"github.com/machillka/web-chatter/internal/config"
+	"github.com/machillka/web-chatter/internal/handler"
 )
 
 func main() {
-	// 从环境变量读取 DSN，格式：user:pass@tcp(host:port)/dbname?charset=utf8mb4&parseTime=true
+	// 从环境变量读取 DSN
 	config.LoadConfig("config/config.yaml")
 	dsn := config.MySQLDSN()
 
@@ -35,10 +38,11 @@ func main() {
 	r.Use(gin.Logger(), gin.Recovery())
 
 	// TODO: 挂载 auth、ws、http 路由
-	// e.g. r.POST("/auth/login", handler.Login)
+	r.POST("/register", handler.Register)
+	r.POST("/login", handler.Login)
 
 	// 启动服务
-	addr := ":8080"
+	addr := fmt.Sprintf(":%d", config.ServerPort())
 	log.Printf("服务器启动: %s", addr)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("服务器启动失败: %v", err)
