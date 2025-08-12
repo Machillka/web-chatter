@@ -1,0 +1,6 @@
+mysql:
+  dsn: "root:secret@tcp(127.0.0.1:3306)/chatdb?charset=utf8mb4&parseTime=true&loc=Local"
+server:
+  port: 8080
+jwt:
+  secret: "your_jwt_secret"
