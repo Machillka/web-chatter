@@ -29,7 +29,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "密码加密失败"})
 		return
 	}
-
 	user := db.User{Username: req.Username, Password: hashed}
 	if err := db.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "用户名已存在"})
@@ -77,4 +76,43 @@ func Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+}
+
+// 用户资料接口
+func Profile(c *gin.Context) {
+	// 使用 c.set 注入值
+	userId := c.GetInt("userID")
+	var user db.User
+	if err := db.DB.First(&user, userId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":       user.ID,
+		"username": user.Username,
+		"created":  user.CreatedAt,
+	})
+}
+
+type updateReq struct {
+	Username string `json:"username" binding:"required,min=3"`
+}
+
+// 用户资料更新
+func UpdateProfile(c *gin.Context) {
+	userID := c.GetUint("userID")
+	var req updateReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.DB.Model(&db.User{}).
+		Where("id = ?", userID).
+		Update("username", req.Username).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "更新成功"})
 }
